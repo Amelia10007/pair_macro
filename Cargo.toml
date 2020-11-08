@@ -1,0 +1,25 @@
+[package]
+name = "pair_macro"
+version = "0.1.0"
+authors = ["Amelia10007 <nat.horn.mk0426@gmail.com>"]
+edition = "2018"
+description = "Create types consisting of the same type values such that Pair, Triplet, and so on."
+license = "MIT"
+repository = "https://github.com/Amelia10007/pair_macro"
+keywords = ["no-std", "tuple", "pair", "triplet", "macro"]
+categories = ["no-std", "data-structure", "tuple"]
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "pair_macro"
+
+[dependencies]
+num-traits = { version = "0.2", optional = true, features = ["libm"] }
+
+[features]
+default = []
+
+[badges]
+travis-ci = { repository = "Amelia10007/pair_macro", branch = "master" }

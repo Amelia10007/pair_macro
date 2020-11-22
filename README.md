@@ -1,4 +1,5 @@
-# pair_macro [![Build Status](https://travis-ci.org/Amelia10007/pair_macro.svg?branch=master)](https://travis-ci.org/Amelia10007/pair_macro)
+
+# pair_macro [![crates.io](https://img.shields.io/crates/v/pair_macro.svg)](https://crates.io/crates/pair_macro) [![Build Status](https://travis-ci.org/Amelia10007/pair_macro.svg?branch=master)](https://travis-ci.org/Amelia10007/pair_macro)
 Create types consisting of the same type values such that Pair, Triplet, and so on.
 
 This crate runs on `no-std` environment.

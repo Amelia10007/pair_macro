@@ -1,4 +1,4 @@
-//! # pair
+//! # pair_macro
 //! Create types consisting of the same type values such that Pair, Triplet, and so on.
 //!
 //! This crate runs on `no-std` environment.

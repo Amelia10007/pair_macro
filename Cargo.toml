@@ -1,6 +1,6 @@
 [package]
 name = "pair_macro"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Amelia10007 <nat.horn.mk0426@gmail.com>"]
 edition = "2018"
 description = "Create types consisting of the same type values such that Pair, Triplet, and so on."
@@ -16,7 +16,11 @@ readme = "README.md"
 name = "pair_macro"
 
 [dependencies]
+serde = { version = "1.0", optional = true, features = ["derive"] }
 num-traits = { version = "0.2", optional = true, features = ["libm"] }
+
+[dev-dependencies]
+serde_json = "1.0"
 
 [features]
 default = []

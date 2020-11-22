@@ -8,3 +8,5 @@ os:
 script:
 - "cargo test"
 - "cargo test --features num-traits"
+- "cargo test --features serde"
+- "cargo test --features num-traits --features serde"

@@ -2,26 +2,27 @@
 //! Create types consisting of the same type values such that Pair, Triplet, and so on.
 //!
 //! This crate runs on `no-std` environment.
+//!
 //! # Examples
 //! ## Use a provided type `Pair`.
-//! ```
+//! ```rust
 //! use pair_macro::Pair;
 //!
-//! let p = Pair::new(1, 2);
-//! let q = p.map(|v| v * 2);
+//! let p = Pair::new(1.0, 2.0); // Pair<f64>
+//! let q = p.map(|v| v * 2.0);
 //!
-//! assert_eq!(Pair::new(2, 4), q);
-//! assert_eq!(2, q.x);
-//! assert_eq!(4, q.y);
+//! assert_eq!(Pair::new(2.0, 4.0), q);
+//! assert_eq!(2.0, q.x);
+//! assert_eq!(4.0, q.y);
 //! ```
 //!
 //! ## Create a new pair type.
-//! ```
+//! ```rust
 //! use pair_macro::create_pair_prelude::*;
 //!
 //! create_pair!(MyOwnPair; a, b, c, d);
 //!
-//! let p = MyOwnPair::new(1, 2, 3, 4);
+//! let p = MyOwnPair::new(1, 2, 3, 4); // MyOwnPair<i32>
 //! let q = MyOwnPair::new(5, 6, 7, 8);
 //! let r = p + q;
 //! assert_eq!(6, r.a);
@@ -39,6 +40,8 @@ pub mod create_pair_prelude {
     pub use crate::num_traits_method;
     #[cfg(feature = "num-traits")]
     pub use num_traits::{Float, Zero};
+    #[cfg(feature = "serde")]
+    pub use serde::{Deserialize, Serialize};
 }
 
 #[allow(unused_imports)]
@@ -70,6 +73,15 @@ macro_rules! create_pair {
     ( $name: tt; $($field: tt),* ) => {
 
         /// Represents a pair consisting of the same-type values.
+        #[cfg(feature = "serde")]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[derive(Deserialize, Serialize)]
+        pub struct $name<T> {
+            $(pub $field: T),*
+        }
+
+        /// Represents a pair consisting of the same-type values.
+        #[cfg(not(feature = "serde"))]
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         pub struct $name<T> {
             $(pub $field: T),*
@@ -560,30 +572,6 @@ mod tests {
         assert_eq!(6, f);
     }
 
-    #[cfg(feature = "num-traits")]
-    #[test]
-    fn test_norm() {
-        let p = Pair::new(2.0, 3.0);
-        assert_eq!(13.0, p.norm());
-    }
-
-    #[cfg(feature = "num-traits")]
-    #[test]
-    fn test_len() {
-        let p = Pair::new(3.0, 4.0);
-        assert_eq!(5.0, p.len());
-    }
-
-    #[cfg(feature = "num-traits")]
-    #[test]
-    fn test_normalize() {
-        let p = Pair::new(3.0, 4.0);
-        let n = p.normalize();
-
-        assert_eq!(n, Pair::new(0.6, 0.8));
-        assert_eq!(1.0, n.norm());
-    }
-
     #[test]
     fn test_into_option() {
         let p = Pair::new(Some(2), Some(3)).into_option();
@@ -676,5 +664,53 @@ mod tests {
         p %= 3;
         assert_eq!(1, p.x);
         assert_eq!(2, p.y);
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "serde")]
+mod tests_feature_serde {
+    use super::*;
+
+    #[test]
+    fn test_serialize() {
+        let p = Pair::new(1, 2);
+        let s = serde_json::to_string(&p).unwrap();
+        let expected = r#"{"x":1,"y":2}"#;
+        assert_eq!(expected, &s);
+    }
+
+    #[test]
+    fn test_deserialize() {
+        let s = r#"{"x":1,"y":2}"#;
+        let p = serde_json::from_str(s).unwrap();
+        assert_eq!(Pair::new(1, 2), p);
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "num-traits")]
+mod tests_feature_num_traits {
+    use super::*;
+
+    #[test]
+    fn test_norm() {
+        let p = Pair::new(2.0, 3.0);
+        assert_eq!(13.0, p.norm());
+    }
+
+    #[test]
+    fn test_len() {
+        let p = Pair::new(3.0, 4.0);
+        assert_eq!(5.0, p.len());
+    }
+
+    #[test]
+    fn test_normalize() {
+        let p = Pair::new(3.0, 4.0);
+        let n = p.normalize();
+
+        assert_eq!(n, Pair::new(0.6, 0.8));
+        assert_eq!(1.0, n.norm());
     }
 }

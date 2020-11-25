@@ -295,7 +295,7 @@ macro_rules! create_pair {
             }
         }
 
-        impl<T: Clone> $name<&T>{
+        impl<T: Clone> $name<&T> {
             /// Maps `Pair<&T>` to `Pair<T>` by cloning each value.
             ///
             /// # Examples
@@ -311,7 +311,7 @@ macro_rules! create_pair {
             }
         }
 
-        impl<T: Clone> $name<&mut T>{
+        impl<T: Clone> $name<&mut T> {
             /// Maps `Pair<&mut T>` to `Pair<T>` by cloning each value.
             ///
             /// # Examples
@@ -328,7 +328,7 @@ macro_rules! create_pair {
             }
         }
 
-        impl<T: Copy> $name<&T>{
+        impl<T: Copy> $name<&T> {
             /// Maps `Pair<&T>` to `Pair<T>` by copying each value.
             ///
             /// # Examples
@@ -344,7 +344,7 @@ macro_rules! create_pair {
             }
         }
 
-        impl<T: Copy> $name<&mut T>{
+        impl<T: Copy> $name<&mut T> {
             /// Maps `Pair<&mut T>` to `Pair<T>` by copying each value.
             ///
             /// # Examples

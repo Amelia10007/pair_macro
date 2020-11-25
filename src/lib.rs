@@ -295,6 +295,48 @@ macro_rules! create_pair {
             }
         }
 
+        impl<T: core::ops::Deref> $name<T>
+        {
+            /// Converts from `$name<T>` or `&$name<T>` to `$name<&T::Target>`.
+            ///
+            /// Leaves the original pair in-place, creating a new one with a reference to the original one,
+            /// additionally coercing the contents via [Deref](https://doc.rust-lang.org/std/ops/trait.Deref.html).
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let p = Pair::new(2, 3);
+            /// let q = p.as_ref(); // Pair<&i32>
+            /// let r = q.as_deref(); // Pair<&i32>, using trait implementation Deref<Target=i32> for &i32
+            /// assert_eq!(Pair::new(&2, &3), r);
+            /// ```
+            pub fn as_deref(&self) -> $name<&<T as core::ops::Deref>::Target> {
+                self.as_ref().map(core::ops::Deref::deref)
+            }
+        }
+
+        impl<T: core::ops::DerefMut> $name<T>
+        {
+            /// Converts from `$name<T>` or `&mut $name<T>` to `$name<&mut T::Target>`.
+            ///
+            /// Leaves the original pair in-place, creating a new one with a mutable reference to the original one,
+            /// additionally coercing the contents via [DerefMut](https://doc.rust-lang.org/std/ops/trait.DerefMut.html).
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let mut p = Pair::new(2, 3);
+            /// let mut q = p.as_mut(); // Pair<&mut i32>
+            /// let r = q.as_deref_mut(); // Pair<&mut i32>, using trait implementation DerefMut<Target=i32> for &mut i32
+            /// assert_eq!(Pair::new(&mut 2, &mut 3), r);
+            /// ```
+            pub fn as_deref_mut(&mut self) -> $name<&mut <T as core::ops::Deref>::Target> {
+                self.as_mut().map(core::ops::DerefMut::deref_mut)
+            }
+        }
+
         impl<T: Clone> $name<&T> {
             /// Maps `Pair<&T>` to `Pair<T>` by cloning each value.
             ///
@@ -713,6 +755,24 @@ mod tests {
         assert_eq!(Some(1), iter.next());
         assert_eq!(Some(2), iter.next());
         assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn test_as_deref() {
+        let p = Pair::new(1, 2);
+        let q = p.as_ref();
+        let r = q.as_deref();
+
+        assert_eq!(Pair::new(&1, &2), r);
+    }
+
+    #[test]
+    fn test_as_deref_mut() {
+        let mut p = Pair::new(1, 2);
+        let mut q = p.as_mut();
+        let r = q.as_deref_mut();
+
+        assert_eq!(Pair::new(&mut 1, &mut 2), r);
     }
 
     #[test]

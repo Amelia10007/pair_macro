@@ -1,6 +1,6 @@
 [package]
 name = "pair_macro"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Amelia10007 <nat.horn.mk0426@gmail.com>"]
 edition = "2018"
 description = "Create types consisting of the same type values such that Pair, Triplet, and so on."

@@ -106,9 +106,9 @@ macro_rules! create_pair {
             /// ```
             /// use pair_macro::Pair;
             ///
-            /// let p = Pair::from_cloned(vec![1, 2]);
-            /// assert_eq!(vec![1, 2], p.x);
-            /// assert_eq!(vec![1, 2], p.y);
+            /// let p = Pair::from_cloned([1, 2]);
+            /// assert_eq!([1, 2], p.x);
+            /// assert_eq!([1, 2], p.y);
             /// ```
             pub fn from_cloned(value: T) -> $name<T>
                 where T: Clone

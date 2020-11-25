@@ -610,6 +610,7 @@ macro_rules! num_traits_method {
             /// ```
             pub fn norm(self) -> T {
                 self.map(|value| value * value)
+                    .into_iter()
                     .fold(T::zero(), |acc, cur| acc + cur)
             }
         }

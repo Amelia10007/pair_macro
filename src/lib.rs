@@ -696,8 +696,8 @@ mod tests {
     }
 
     #[test]
-    fn test_iter_mut(){
-        let mut p=Pair::new(1,2);
+    fn test_iter_mut() {
+        let mut p = Pair::new(1, 2);
         let mut iter = p.iter_mut();
 
         assert_eq!(Some(&mut 1), iter.next());

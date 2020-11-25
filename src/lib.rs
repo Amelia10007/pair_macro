@@ -603,7 +603,17 @@ mod tests {
 
     #[test]
     fn test_add() {
-        assert_eq!(Pair::new(6, 8), Pair::new(2, 3) + Pair::new(4, 5));
+        let p = Pair::new(2, 3);
+        let q = Pair::new(4, 5);
+
+        // i32 implements Add<i32>
+        assert_eq!(Pair::new(6, 8), p + q);
+        // i32 implements Add<&i32>
+        assert_eq!(Pair::new(6, 8), p + q.as_ref());
+        // &i32 implements Add<i32>
+        assert_eq!(Pair::new(6, 8), p.as_ref() + q);
+        // &i32 implements Add<&i32>
+        assert_eq!(Pair::new(6, 8), p.as_ref() + q.as_ref());
     }
 
     #[test]

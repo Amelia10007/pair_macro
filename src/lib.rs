@@ -239,12 +239,125 @@ macro_rules! create_pair {
             /// assert_eq!(5, sum);
             /// assert_eq!(6, product);
             /// ```
-            pub fn fold<U, F>(self, init: U, mut f: F) -> U
+            #[deprecated(since = "0.1.3", note = "Use into_iter().fold(init, f) instead")]
+            pub fn fold<U, F>(self, init: U, f: F) -> U
                 where F: FnMut(U, T) -> U
             {
-                let mut value = init;
-                $(value = f(value, self.$field);)*
-                value
+                self.into_iter().fold(init, f)
+            }
+
+            /// Returns an iterator that yields references of each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let p = Pair::new(2, 3);
+            /// let mut iter = p.iter();
+            /// assert_eq!(Some(&2), iter.next());
+            /// assert_eq!(Some(&3), iter.next());
+            /// assert!(iter.next().is_none());
+            /// ```
+            pub fn iter(&self) -> impl Iterator<Item = &T> + '_ {
+                core::iter::empty() $(.chain(core::iter::once(&self.$field)))*
+            }
+
+            /// Returns an iterator that yields mutable references of each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let mut p = Pair::new(2, 3);
+            /// let mut iter = p.iter_mut();
+            /// assert_eq!(Some(&mut 2), iter.next());
+            /// assert_eq!(Some(&mut 3), iter.next());
+            /// assert!(iter.next().is_none());
+            /// ```
+            pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> + '_ {
+                core::iter::empty() $(.chain(core::iter::once(&mut self.$field)))*
+            }
+
+            /// Consuming this pair, returns an iterator that yields each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let p = Pair::new(2, 3);
+            /// let mut iter = p.into_iter();
+            /// assert_eq!(Some(2), iter.next());
+            /// assert_eq!(Some(3), iter.next());
+            /// assert!(iter.next().is_none());
+            /// ```
+            pub fn into_iter(self) -> impl Iterator<Item = T> {
+                core::iter::empty() $(.chain(core::iter::once(self.$field)))*
+            }
+        }
+
+        impl<T: Clone> $name<&T>{
+            /// Maps `Pair<&T>` to `Pair<T>` by cloning each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let p = Pair::new(2, 3); // Pair<i32>
+            /// let q = p.as_ref(); // Pair<&i32>
+            /// assert_eq!(p, q.cloned());
+            /// ```
+            pub fn cloned(self) -> $name<T> {
+                self.map(Clone::clone)
+            }
+        }
+
+        impl<T: Clone> $name<&mut T>{
+            /// Maps `Pair<&mut T>` to `Pair<T>` by cloning each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let mut p = Pair::new(2, 3); // Pair<i32>
+            /// let q = p.as_mut(); // Pair<&mut i32>
+            /// let cloned = q.cloned();
+            /// assert_eq!(p, cloned);
+            /// ```
+            pub fn cloned(self) -> $name<T> {
+                self.map(|r| r as &T).map(Clone::clone)
+            }
+        }
+
+        impl<T: Copy> $name<&T>{
+            /// Maps `Pair<&T>` to `Pair<T>` by copying each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let p = Pair::new(2, 3); // Pair<i32>
+            /// let q = p.as_ref(); // Pair<&i32>
+            /// assert_eq!(p, q.copied());
+            /// ```
+            pub fn copied(self) -> $name<T> {
+                self.cloned()
+            }
+        }
+
+        impl<T: Copy> $name<&mut T>{
+            /// Maps `Pair<&mut T>` to `Pair<T>` by copying each value.
+            ///
+            /// # Examples
+            /// ```
+            /// use pair_macro::Pair;
+            ///
+            /// let mut p = Pair::new(2, 3); // Pair<i32>
+            /// let q = p.as_mut(); // Pair<&mut i32>
+            /// let copied = q.copied();
+            /// assert_eq!(p, copied);
+            /// ```
+            pub fn copied(self) -> $name<T> {
+                self.cloned()
             }
         }
 
@@ -570,6 +683,68 @@ mod tests {
     fn test_fold() {
         let f = Pair::new(2, 3).fold(1, |acc, cur| acc * cur);
         assert_eq!(6, f);
+    }
+
+    #[test]
+    fn test_iter() {
+        let p = Pair::new(1, 2);
+        let mut iter = p.iter();
+
+        assert_eq!(Some(&1), iter.next());
+        assert_eq!(Some(&2), iter.next());
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn test_iter_mut(){
+        let mut p=Pair::new(1,2);
+        let mut iter = p.iter_mut();
+
+        assert_eq!(Some(&mut 1), iter.next());
+        assert_eq!(Some(&mut 2), iter.next());
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn test_into_iter() {
+        let p = Pair::new(1, 2);
+        let mut iter = p.into_iter();
+
+        assert_eq!(Some(1), iter.next());
+        assert_eq!(Some(2), iter.next());
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn test_cloned() {
+        let p = Pair::new([1, 2], [3, 4]);
+        let q = p.as_ref().cloned();
+
+        assert_eq!(p, q);
+    }
+
+    #[test]
+    fn test_cloned_mut() {
+        let mut p = Pair::new([1, 2], [3, 4]);
+        let q = p.as_mut().cloned();
+
+        assert_eq!(p, q);
+    }
+
+    #[test]
+    fn test_copied() {
+        let p = Pair::new(1, 2);
+        let q = p.as_ref().copied();
+
+        assert_eq!(p, q);
+    }
+
+    #[test]
+    fn test_copied_mut() {
+        let mut p = Pair::new(1, 2);
+        let q = p.as_mut().copied();
+
+        assert_eq!(p, q);
     }
 
     #[test]

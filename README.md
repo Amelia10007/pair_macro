@@ -60,7 +60,7 @@ Of course, your original pair types defined by `create_pair!` macro have the sam
 ## Features
 Pair types support [serde](https://crates.io/crates/serde) by enabling `serde` feature: in your `Cargo.toml`,  
 ```
-pair_macro = { version = "0.1.3", features = ["serde"] }
+pair_macro = { version = "0.1.4", features = ["serde"] }
 ```
 
 ## Note

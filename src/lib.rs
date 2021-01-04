@@ -34,6 +34,27 @@
 //! assert_eq!(12, r.d);
 //! ```
 //!
+//! ## Create a new pair type with documentation comment.
+//! ```rust
+//! use pair_macro::create_pair_prelude::*;
+//!
+//! create_pair!(
+//!    /// Some documentation here
+//!    struct MyOwnPair;
+//!    a, b, c, d
+//! );
+//!
+//! let p = MyOwnPair::new(1, 2, 3, 4); // MyOwnPair<i32>
+//! let q = MyOwnPair::new(5, 6, 7, 8);
+//! let r = p + q;
+//!
+//! // `MyOwnPair<T>` has `a`, `b`, `c` and `d` fields
+//! assert_eq!(6, r.a);
+//! assert_eq!(8, r.b);
+//! assert_eq!(10, r.c);
+//! assert_eq!(12, r.d);
+//! ```
+//!
 //! ## Use provided methods
 //! ```rust
 //! use core::str::FromStr;
@@ -63,8 +84,9 @@
 #![no_std]
 
 /// This is required to create a pair type.
+/// See also [`pair_macro::create_pair`](../macro.create_pair.html)
 pub mod create_pair_prelude {
-    pub use crate::{create_pair, impl_core_ops};
+    pub use crate::{create_pair, declare_type, impl_common_methods, impl_core_ops};
 
     pub use crate::num_traits_method;
     #[cfg(feature = "num-traits")]
@@ -77,13 +99,10 @@ pub mod create_pair_prelude {
 use create_pair_prelude::*;
 
 /// Creates a pair type.
-/// When this macro is used out of this crate, [`pair_macro::create_pair_prelude`](create_pair_prelude/index.html) must be imported.
-///
-/// # Params
-/// 1. `name` the name of the new pair type.
-/// 1. `field` the fields' name.
+/// [`pair_macro::create_pair_prelude`](create_pair_prelude/index.html) must be imported to use this.
 ///
 /// # Examples
+/// ## Basic usage
 /// ```
 /// use pair_macro::create_pair_prelude::*;
 ///
@@ -97,29 +116,70 @@ use create_pair_prelude::*;
 /// assert_eq!(10, r.c);
 /// assert_eq!(12, r.d);
 /// ```
+/// ## With documentation comment
+/// ```
+/// use pair_macro::create_pair_prelude::*;
+///
+/// // create a type with documentation comment.
+/// create_pair!(
+///    /// My own pair type.
+///    struct MyOwnPair;
+///    a, b, c, d
+/// );
+///
+/// let p = MyOwnPair::new(1, 2, 3, 4);
+/// let q = MyOwnPair::new(5, 6, 7, 8);
+/// let r = p + q;
+/// assert_eq!(6, r.a);
+/// assert_eq!(8, r.b);
+/// assert_eq!(10, r.c);
+/// assert_eq!(12, r.d);
+/// ```
 #[macro_export]
 macro_rules! create_pair {
     ( $name: tt; $($field: tt),* ) => {
+        create_pair!(struct $name; $($field),*);
+    };
 
-        /// Represents a pair consisting of the same-type values.
-        ///
-        /// See also [crate documentation](index.html).
+    ($(#[$attr: meta])* struct $name: tt; $($field: tt),* ) =>{
         #[cfg(feature = "serde")]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-        #[derive(Deserialize, Serialize)]
-        pub struct $name<T> {
-            $(pub $field: T),*
-        }
+        declare_type!(
+            $(#[$attr])*
+            #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+            #[derive(Deserialize, Serialize)]
+            struct $name; $($field),*
+        );
 
-        /// Represents a pair consisting of the same-type values.
-        ///
-        /// See also [crate documentation](index.html).
         #[cfg(not(feature = "serde"))]
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        declare_type!(
+            $(#[$attr])*
+            #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+            struct $name; $($field),*
+        );
+
+        impl_common_methods!($name; $($field),*);
+        impl_core_ops!($name);
+
+        #[cfg(feature = "num-traits")]
+        num_traits_method!($name);
+    }
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! declare_type {
+    ($(#[$attr: meta])* struct $name: tt; $($field: tt),* ) => {
+        $(#[$attr])*
         pub struct $name<T> {
             $(pub $field: T),*
         }
+    }
+}
 
+#[macro_export]
+#[doc(hidden)]
+macro_rules! impl_common_methods {
+    ($name: tt; $($field: tt),*) => {
         impl<T> $name<T>{
             /// Creates a new pair.
             /// # Examples
@@ -490,11 +550,6 @@ macro_rules! create_pair {
                 Ok(())
             }
         }
-
-        impl_core_ops!($name);
-
-        #[cfg(feature = "num-traits")]
-        num_traits_method!($name);
     }
 }
 
@@ -676,8 +731,19 @@ macro_rules! num_traits_method {
     };
 }
 
-create_pair!(Pair; x, y);
-create_pair!(Triplet; x, y, z);
+create_pair!(
+    /// Represents a pair consisting of 2 values.
+    struct Pair;
+    x,
+    y
+);
+create_pair!(
+    /// Represents a pair consisting of 3 values.
+    struct Triplet;
+    x,
+    y,
+    z
+);
 
 #[cfg(test)]
 mod tests {
